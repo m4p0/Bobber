@@ -435,4 +435,4 @@ if __name__ == "__main__":
             for key, tokenData in initial_combinations.items():
                 with ThreadPoolExecutor() as executor:
                     executor.submit(execute_authentication, tokenData, key.split(':')[0], args.resource, args.client, args.redirect_url, args.driver_path, args.tf_path, args.keep_open, args.headless, args.tf_outpath)
-            time.sleep(600)
+            time.sleep(300)
