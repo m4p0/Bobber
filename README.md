@@ -87,6 +87,7 @@ RoadTools Options:
   -d DRIVER_PATH, --driver-path DRIVER_PATH
                         Path to geckodriver file on disk (download from: https://github.com/mozilla/geckodriver/releases/latest)
   -k, --keep-open       Do not close the browser window after timeout. Useful if you want to browse online apps with the obtained credentials
+  --headless BOOLEAN    Provide the headless arg to run in headless mode on debian
 ```
 # Setup
 

