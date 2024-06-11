@@ -160,7 +160,7 @@ def download_remote_file(ssh, remote_file, local_file):
     except Exception as e:
         print(f"{ERROR_ICON} Failed to download file: {e}")
 
-def execute_authentication(estscookie, username, resourceUri, clientId, redirectUrl, geckoDriverPath, teamFiltrationPath, keepOpen, headless, outpath):
+def execute_authentication(estscookie, username, resourceUri, clientId, redirectUrl, geckoDriverPath, teamFiltrationPath, keepOpen, headless, outDir):
     # Attempt to execute the authentication process
     try:
         # Informing the user about the start of the process
@@ -223,7 +223,7 @@ def execute_authentication(estscookie, username, resourceUri, clientId, redirect
             teamFiltrationPath = os.path.join(os.getcwd(), teamFiltrationPath)
             
             #Build the command line
-            commandLine = f"{teamFiltrationPath} --outpath {outDir}{safeUserName} --roadtools {outfilePath} --exfil "
+            commandLine = f"{teamFiltrationPath} --outpath {outDir}/{safeUserName} --roadtools {outfilePath} --exfil "
             commandLine += " ".join(tfArguments)
 
             print(f"{INFO_ICON} Executing: {commandLine}")
